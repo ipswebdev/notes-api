@@ -3,9 +3,10 @@ const express = require('express');
 const mongoose = require('mongoose');
 
 const notesRoutes = require('./routes/notes');
+const path = require('path');
 
 const app = express();
-mongoose.connect('mongodb+srv://Pranay:CXzZvx8VMdKBn3GB@cluster0.sak1dpx.mongodb.net/notes?retryWrites=true&w=majority')
+mongoose.connect('mongodb+srv://Pranay:tt2OUx16RhMqwB94@cluster0.sak1dpx.mongodb.net/notes?retryWrites=true&w=majority')
 .then(data=>{
     console.log('connected to MongoDB')
 })
@@ -14,6 +15,7 @@ mongoose.connect('mongodb+srv://Pranay:CXzZvx8VMdKBn3GB@cluster0.sak1dpx.mongodb
 })
 
 app.use(express.json());
+app.use("/images",express.static(path.join('images')))
 // app.use(express.urlencoded({extended:false}));
 
 app.use((req,res,next)=>{

@@ -1,21 +1,65 @@
 const express = require('express');
+const { isValid } = require('ipaddr.js');
+const { diskStorage } = require('multer');
+const path = require('path');
+const multer = require('multer');
 const Note = require('../models/note');
 
 const router = express.Router();
 
+const IMAGE_TYPE_MAP = {
+    'image/png':'png',
+    'image/jpg':'jpg',
+    'image/jpeg':'jpeg',
+    'image/svg':'svg'
+}
 
-router.post('',(req,res)=>{
+const storage = multer.diskStorage({
+    destination : (req,file,cb) =>{
+        const ext = IMAGE_TYPE_MAP[file.mimetype]
+        let error = new Error('Invalid Asset Type')
+        const folder = `${__dirname}\images`;
+        console.log('str',folder)
+        if(ext){
+            error = null;
+            // cb(null,__dirname+"\images")
+        }
+            cb(error,'./images')  
+    },
+    filename : (req,file,cb) =>{
+        const fileName = file.originalname.toLocaleLowerCase().split(' ').join('-');
+        const ext = IMAGE_TYPE_MAP[file.mimetype]
+        cb(null,fileName+'-'+Date.now()+'.'+ext)
+    }
+}
+)
+
+
+
+
+router.post('',multer({storage:storage}).single('image'),(req,res)=>{
     // const note = req.body
-    const note = new Note({title:req.body.title,description:req.body.description})
-    console.log(note);
+    const url = req.protocol + '://' + req.get('host');
+    const note = new Note({
+        title:req.body.title,
+        description:req.body.description,
+        imagePath: url+'/images/'+req.file.filename
+    })
     // notes.push(note)
     note.save().then(result=>{
         console.log('post then res',result)
+        res.status(201).json({
+            message:'success',
+            note:{
+                title:result.title,
+                description:result.description,
+                id:result._id,
+                imagePath:result.imagePath
+            }
+        })
     });
 
-    res.status(201).json({
-        message:'success'
-    })
+    
 })
 
 router.get('',(req,res)=>{
